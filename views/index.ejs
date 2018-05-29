@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <div id="main"></div>
+    <script src="/javascripts/elm.js"></script>
+    <script src="javascripts/solid-auth-client.bundle.js"></script>
+    <script>
+      var node = document.getElementById('main');
+      var app = Elm.Main.embed(node);
+
+      app.ports.login.subscribe(function(word) {
+        SolidAuthClient.popupLogin(
+          { popupUri: 'http://localhost:3000/popup' })
+          .then(function (session) {
+            console.log(session);
+            app.ports.loginReturn.send("OK "+session);
+          })
+          .catch(function(err) {
+            app.ports.loginReturn.send("ERROR "+err);
+          });
+      });
+
+    </script>
+  </body>
+</html>
