@@ -19,10 +19,10 @@
           { popupUri: 'http://localhost:3000/popup' })
           .then(function (session) {
             console.log(session);
-            app.ports.loginReturn.send("OK "+session);
+            app.ports.loginReturn.send({ webId: session.webId });
           })
           .catch(function(err) {
-            app.ports.loginReturn.send("ERROR "+err);
+            app.ports.loginReturn.send({ webId: "" });
           });
       });
 

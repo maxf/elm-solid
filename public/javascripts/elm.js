@@ -12890,26 +12890,49 @@ var _user$project$Main$update = F2(
 						{message: 'Logging on'}),
 					_1: _user$project$Main$login('meh')
 				};
+			case 'LogOut':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{authInfo: _elm_lang$core$Maybe$Nothing}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			case 'LogInReturn':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{message: _p0._0}),
+						{
+							message: 'Logged on',
+							authInfo: _elm_lang$core$Maybe$Just(_p0._0)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _user$project$Main$loginReturn = _elm_lang$core$Native_Platform.incomingPort('loginReturn', _elm_lang$core$Json_Decode$string);
-var _user$project$Main$Model = function (a) {
-	return {message: a};
+var _user$project$Main$loginReturn = _elm_lang$core$Native_Platform.incomingPort(
+	'loginReturn',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (webId) {
+			return _elm_lang$core$Json_Decode$succeed(
+				{webId: webId});
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'webId', _elm_lang$core$Json_Decode$string)));
+var _user$project$Main$AuthInfo = function (a) {
+	return {webId: a};
 };
+var _user$project$Main$Model = F2(
+	function (a, b) {
+		return {authInfo: a, message: b};
+	});
 var _user$project$Main$init = function (location) {
 	return {
 		ctor: '_Tuple2',
-		_0: _user$project$Main$Model('ready'),
+		_0: A2(_user$project$Main$Model, _elm_lang$core$Maybe$Nothing, 'ready'),
 		_1: _elm_lang$core$Platform_Cmd$none
 	};
 };
@@ -12922,22 +12945,35 @@ var _user$project$Main$LogInReturn = function (a) {
 var _user$project$Main$subscriptions = function (model) {
 	return _user$project$Main$loginReturn(_user$project$Main$LogInReturn);
 };
+var _user$project$Main$LogOut = {ctor: 'LogOut'};
 var _user$project$Main$LogIn = {ctor: 'LogIn'};
 var _user$project$Main$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{ctor: '[]'},
-				{
+	var userInfo = function () {
+		var _p1 = model.authInfo;
+		if (_p1.ctor === 'Just') {
+			return {
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(_elm_lang$core$Basics_ops['++'], 'Logged in as ', _p1._0.webId)),
+				_1: {
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(model.message),
+					_0: A2(
+						_elm_lang$html$Html$button,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$LogOut),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Log out '),
+							_1: {ctor: '[]'}
+						}),
 					_1: {ctor: '[]'}
-				}),
-			_1: {
+				}
+			};
+		} else {
+			return {
 				ctor: '::',
 				_0: A2(
 					_elm_lang$html$Html$button,
@@ -12952,8 +12988,13 @@ var _user$project$Main$view = function (model) {
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
-			}
-		});
+			};
+		}
+	}();
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		userInfo);
 };
 var _user$project$Main$main = A2(
 	_elm_lang$navigation$Navigation$program,
@@ -12963,7 +13004,7 @@ var _user$project$Main$main = A2(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Main.Msg":{"args":[],"tags":{"LogIn":[],"UrlHasChanged":["Navigation.Location"],"LogInReturn":["String"]}}},"aliases":{"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Main.Msg":{"args":[],"tags":{"LogOut":[],"LogIn":[],"UrlHasChanged":["Navigation.Location"],"LogInReturn":["Main.AuthInfo"]}}},"aliases":{"Main.AuthInfo":{"args":[],"type":"{ webId : String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

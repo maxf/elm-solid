@@ -18,7 +18,7 @@ main =
 port login : String -> Cmd msg
 
 
-port loginReturn : (String -> msg) -> Sub msg
+port loginReturn : (AuthInfo -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -28,16 +28,23 @@ subscriptions model =
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
-    ( Model "ready", Cmd.none )
+    ( Model Nothing "ready", Cmd.none )
+
+
+type alias AuthInfo =
+    { webId : String }
 
 
 type alias Model =
-    { message : String }
+    { authInfo : Maybe AuthInfo
+    , message : String
+    }
 
 
 type Msg
     = LogIn
-    | LogInReturn String
+    | LogOut
+    | LogInReturn AuthInfo
     | UrlHasChanged Location
 
 
@@ -47,8 +54,11 @@ update msg model =
         LogIn ->
             ( { model | message = "Logging on" }, login "meh" )
 
-        LogInReturn message ->
-            ( { model | message = message }, Cmd.none )
+        LogOut ->
+            ( { model | authInfo = Nothing }, Cmd.none )
+
+        LogInReturn authInfo ->
+            ( { model | message = "Logged on", authInfo = Just authInfo }, Cmd.none )
 
         UrlHasChanged _ ->
             ( model, Cmd.none )
@@ -60,7 +70,16 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div [] [ text model.message ]
-        , button [ onClick LogIn ] [ text "Log in" ]
-        ]
+    let
+        userInfo =
+            case model.authInfo of
+                Just info ->
+                    [ text ("Logged in as " ++ info.webId)
+                    , button [ onClick LogOut ] [ text "Log out " ]
+                    ]
+
+                Nothing ->
+                    [ button [ onClick LogIn ] [ text "Log in" ] ]
+
+    in
+        div [] userInfo
