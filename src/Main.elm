@@ -3,7 +3,7 @@ port module Main exposing (main)
 import Navigation exposing (Location)
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
-
+import JsonLd exposing (..)
 
 main : Program Never Model Msg
 main =
@@ -28,17 +28,19 @@ subscriptions model =
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
-    ( Model Nothing "ready", Cmd.none )
-
-
-type alias AuthInfo =
-    { webId : String }
+    ( Model Nothing Nothing, Cmd.none )
 
 
 type alias Model =
-    { authInfo : Maybe AuthInfo
-    , message : String
+    { webId : String -- empty string means no user is logged in
+    , username : Maybe String
     }
+
+initialModel =
+    Model "" Nothing
+
+type alias AuthInfo =
+    { webId : String }
 
 
 type Msg
@@ -46,35 +48,44 @@ type Msg
     | LogOut
     | LogInReturn AuthInfo
     | UrlHasChanged Location
+    | UsernameFetched (Result String String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LogIn ->
-            ( { model | message = "Logging on" }, login "meh" )
+            ( model, login "" )
 
         LogOut ->
-            ( { model | authInfo = Nothing }, Cmd.none )
+            ( initialModel, Cmd.none )
 
         LogInReturn authInfo ->
-            ( { model | message = "Logged on", authInfo = Just authInfo }, Cmd.none )
+            ( { model | webId = authInfo.webId }
+            , fetchUsername
+            )
+
+        UsernameFetched (Ok name) ->
+            ( { model | name = name }, Cmd.none )
+
+        UsernameFetched (Err name) ->
+            ( { model | name = "no name" }, Cmd.none )
 
         UrlHasChanged _ ->
             ( model, Cmd.none )
 
 
 
--- VIEW
+fetchUsername -- fetch the user's card and retrieve the name from the results
 
 
 view : Model -> Html Msg
 view model =
     let
         userInfo =
-            case model.authInfo of
-                Just info ->
-                    [ text ("Logged in as " ++ info.webId)
+            case model.webId of
+                Just id ->
+                    [ text ("Logged in as " ++ model.username)
                     , button [ onClick LogOut ] [ text "Log out " ]
                     ]
 

@@ -12873,6 +12873,92 @@ var _elm_lang$navigation$Navigation$onEffects = F4(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Navigation'] = {pkg: 'elm-lang/navigation', init: _elm_lang$navigation$Navigation$init, onEffects: _elm_lang$navigation$Navigation$onEffects, onSelfMsg: _elm_lang$navigation$Navigation$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$navigation$Navigation$cmdMap, subMap: _elm_lang$navigation$Navigation$subMap};
 
+var _user$project$JsonLd$objects = _elm_lang$core$Json_Decode$oneOf(
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$core$Json_Decode$map,
+			function (s) {
+				return {
+					ctor: '::',
+					_0: s,
+					_1: {ctor: '[]'}
+				};
+			},
+			_elm_lang$core$Json_Decode$string),
+		_1: {
+			ctor: '::',
+			_0: _elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
+			_1: {ctor: '[]'}
+		}
+	});
+var _user$project$JsonLd$property = _elm_lang$core$Json_Decode$dict(_user$project$JsonLd$objects);
+var _user$project$JsonLd$fromString = function (json) {
+	var _p0 = A2(
+		_elm_lang$core$Json_Decode$decodeString,
+		_elm_lang$core$Json_Decode$list(_user$project$JsonLd$property),
+		json);
+	if (_p0.ctor === 'Ok') {
+		return _p0._0;
+	} else {
+		return A2(
+			_elm_lang$core$Debug$log,
+			A2(_elm_lang$core$Basics_ops['++'], 'Failed to parse JsonLD: ', _p0._0),
+			{ctor: '[]'});
+	}
+};
+var _user$project$JsonLd$Triple = F3(
+	function (a, b, c) {
+		return {subject: a, predicate: b, object: c};
+	});
+var _user$project$JsonLd$propertyToTriples = F2(
+	function (subject, _p1) {
+		var _p2 = _p1;
+		return A2(
+			_elm_lang$core$List$map,
+			function (object) {
+				return A3(_user$project$JsonLd$Triple, subject, _p2._0, object);
+			},
+			_p2._1);
+	});
+var _user$project$JsonLd$dictToTriples = function (dict) {
+	var maybeSubject = A2(_elm_lang$core$Dict$get, '@id', dict);
+	var _p3 = maybeSubject;
+	if (_p3.ctor === 'Nothing') {
+		return A2(
+			_elm_lang$core$Debug$log,
+			'Failed to find @id in JSON-LD object',
+			{ctor: '[]'});
+	} else {
+		if ((_p3._0.ctor === '::') && (_p3._0._1.ctor === '[]')) {
+			return _elm_lang$core$List$concat(
+				A2(
+					_elm_lang$core$List$map,
+					_user$project$JsonLd$propertyToTriples(_p3._0._0),
+					A2(
+						_elm_lang$core$List$filter,
+						function (i) {
+							return !_elm_lang$core$Native_Utils.eq(
+								_elm_lang$core$Tuple$first(i),
+								'@id');
+						},
+						_elm_lang$core$Dict$toList(dict))));
+		} else {
+			return A2(
+				_elm_lang$core$Debug$log,
+				'Found multiple @id in JSON-LD object',
+				{ctor: '[]'});
+		}
+	}
+};
+var _user$project$JsonLd$jsonToTriples = function (json) {
+	return _elm_lang$core$List$concat(
+		A2(
+			_elm_lang$core$List$map,
+			_user$project$JsonLd$dictToTriples,
+			_user$project$JsonLd$fromString(json)));
+};
+
 var _user$project$Main$login = _elm_lang$core$Native_Platform.outgoingPort(
 	'login',
 	function (v) {
@@ -12918,13 +13004,31 @@ var _user$project$Main$loginReturn = _elm_lang$core$Native_Platform.incomingPort
 	A2(
 		_elm_lang$core$Json_Decode$andThen,
 		function (webId) {
-			return _elm_lang$core$Json_Decode$succeed(
-				{webId: webId});
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (name) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{webId: webId, name: name});
+				},
+				A2(
+					_elm_lang$core$Json_Decode$field,
+					'name',
+					_elm_lang$core$Json_Decode$oneOf(
+						{
+							ctor: '::',
+							_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+							_1: {
+								ctor: '::',
+								_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+								_1: {ctor: '[]'}
+							}
+						})));
 		},
 		A2(_elm_lang$core$Json_Decode$field, 'webId', _elm_lang$core$Json_Decode$string)));
-var _user$project$Main$AuthInfo = function (a) {
-	return {webId: a};
-};
+var _user$project$Main$AuthInfo = F2(
+	function (a, b) {
+		return {webId: a, name: b};
+	});
 var _user$project$Main$Model = F2(
 	function (a, b) {
 		return {authInfo: a, message: b};
@@ -13004,7 +13108,7 @@ var _user$project$Main$main = A2(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Main.Msg":{"args":[],"tags":{"LogOut":[],"LogIn":[],"UrlHasChanged":["Navigation.Location"],"LogInReturn":["Main.AuthInfo"]}}},"aliases":{"Main.AuthInfo":{"args":[],"type":"{ webId : String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Main.Msg":{"args":[],"tags":{"LogOut":[],"LogIn":[],"UrlHasChanged":["Navigation.Location"],"LogInReturn":["Main.AuthInfo"]}}},"aliases":{"Main.AuthInfo":{"args":[],"type":"{ webId : String, name : Maybe.Maybe String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])
