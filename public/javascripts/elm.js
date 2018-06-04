@@ -12873,97 +12873,38 @@ var _elm_lang$navigation$Navigation$onEffects = F4(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Navigation'] = {pkg: 'elm-lang/navigation', init: _elm_lang$navigation$Navigation$init, onEffects: _elm_lang$navigation$Navigation$onEffects, onSelfMsg: _elm_lang$navigation$Navigation$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$navigation$Navigation$cmdMap, subMap: _elm_lang$navigation$Navigation$subMap};
 
-var _user$project$JsonLd$objects = _elm_lang$core$Json_Decode$oneOf(
-	{
-		ctor: '::',
-		_0: A2(
-			_elm_lang$core$Json_Decode$map,
-			function (s) {
-				return {
-					ctor: '::',
-					_0: s,
-					_1: {ctor: '[]'}
-				};
-			},
-			_elm_lang$core$Json_Decode$string),
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
-			_1: {ctor: '[]'}
-		}
-	});
-var _user$project$JsonLd$property = _elm_lang$core$Json_Decode$dict(_user$project$JsonLd$objects);
-var _user$project$JsonLd$fromString = function (json) {
-	var _p0 = A2(
-		_elm_lang$core$Json_Decode$decodeString,
-		_elm_lang$core$Json_Decode$list(_user$project$JsonLd$property),
-		json);
-	if (_p0.ctor === 'Ok') {
-		return _p0._0;
-	} else {
-		return A2(
-			_elm_lang$core$Debug$log,
-			A2(_elm_lang$core$Basics_ops['++'], 'Failed to parse JsonLD: ', _p0._0),
-			{ctor: '[]'});
-	}
-};
-var _user$project$JsonLd$Triple = F3(
-	function (a, b, c) {
-		return {subject: a, predicate: b, object: c};
-	});
-var _user$project$JsonLd$propertyToTriples = F2(
-	function (subject, _p1) {
-		var _p2 = _p1;
-		return A2(
-			_elm_lang$core$List$map,
-			function (object) {
-				return A3(_user$project$JsonLd$Triple, subject, _p2._0, object);
-			},
-			_p2._1);
-	});
-var _user$project$JsonLd$dictToTriples = function (dict) {
-	var maybeSubject = A2(_elm_lang$core$Dict$get, '@id', dict);
-	var _p3 = maybeSubject;
-	if (_p3.ctor === 'Nothing') {
-		return A2(
-			_elm_lang$core$Debug$log,
-			'Failed to find @id in JSON-LD object',
-			{ctor: '[]'});
-	} else {
-		if ((_p3._0.ctor === '::') && (_p3._0._1.ctor === '[]')) {
-			return _elm_lang$core$List$concat(
-				A2(
-					_elm_lang$core$List$map,
-					_user$project$JsonLd$propertyToTriples(_p3._0._0),
-					A2(
-						_elm_lang$core$List$filter,
-						function (i) {
-							return !_elm_lang$core$Native_Utils.eq(
-								_elm_lang$core$Tuple$first(i),
-								'@id');
-						},
-						_elm_lang$core$Dict$toList(dict))));
-		} else {
-			return A2(
-				_elm_lang$core$Debug$log,
-				'Found multiple @id in JSON-LD object',
-				{ctor: '[]'});
-		}
-	}
-};
-var _user$project$JsonLd$jsonToTriples = function (json) {
-	return _elm_lang$core$List$concat(
-		A2(
-			_elm_lang$core$List$map,
-			_user$project$JsonLd$dictToTriples,
-			_user$project$JsonLd$fromString(json)));
-};
-
 var _user$project$Main$login = _elm_lang$core$Native_Platform.outgoingPort(
 	'login',
 	function (v) {
 		return v;
 	});
+var _user$project$Main$fetchUsername = _elm_lang$core$Native_Platform.outgoingPort(
+	'fetchUsername',
+	function (v) {
+		return v;
+	});
+var _user$project$Main$loginReturn = _elm_lang$core$Native_Platform.incomingPort(
+	'loginReturn',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (webId) {
+			return _elm_lang$core$Json_Decode$succeed(
+				{webId: webId});
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'webId', _elm_lang$core$Json_Decode$string)));
+var _user$project$Main$usernameReturn = _elm_lang$core$Native_Platform.incomingPort('usernameReturn', _elm_lang$core$Json_Decode$string);
+var _user$project$Main$Model = F2(
+	function (a, b) {
+		return {webId: a, username: b};
+	});
+var _user$project$Main$init = function (location) {
+	return {
+		ctor: '_Tuple2',
+		_0: A2(_user$project$Main$Model, '', _elm_lang$core$Maybe$Nothing),
+		_1: _elm_lang$core$Platform_Cmd$none
+	};
+};
+var _user$project$Main$initialModel = A2(_user$project$Main$Model, '', _elm_lang$core$Maybe$Nothing);
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -12971,27 +12912,28 @@ var _user$project$Main$update = F2(
 			case 'LogIn':
 				return {
 					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{message: 'Logging on'}),
-					_1: _user$project$Main$login('meh')
+					_0: model,
+					_1: _user$project$Main$login('')
 				};
 			case 'LogOut':
+				return {ctor: '_Tuple2', _0: _user$project$Main$initialModel, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'LogInReturn':
+				var _p1 = _p0._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{authInfo: _elm_lang$core$Maybe$Nothing}),
-					_1: _elm_lang$core$Platform_Cmd$none
+						{webId: _p1.webId}),
+					_1: _user$project$Main$fetchUsername(_p1.webId)
 				};
-			case 'LogInReturn':
+			case 'UsernameFetched':
+				var _p2 = _p0._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							message: 'Logged on',
-							authInfo: _elm_lang$core$Maybe$Just(_p0._0)
+							username: _elm_lang$core$Native_Utils.eq(_p2, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(_p2)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -12999,46 +12941,11 @@ var _user$project$Main$update = F2(
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _user$project$Main$loginReturn = _elm_lang$core$Native_Platform.incomingPort(
-	'loginReturn',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		function (webId) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (name) {
-					return _elm_lang$core$Json_Decode$succeed(
-						{webId: webId, name: name});
-				},
-				A2(
-					_elm_lang$core$Json_Decode$field,
-					'name',
-					_elm_lang$core$Json_Decode$oneOf(
-						{
-							ctor: '::',
-							_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-							_1: {
-								ctor: '::',
-								_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-								_1: {ctor: '[]'}
-							}
-						})));
-		},
-		A2(_elm_lang$core$Json_Decode$field, 'webId', _elm_lang$core$Json_Decode$string)));
-var _user$project$Main$AuthInfo = F2(
-	function (a, b) {
-		return {webId: a, name: b};
-	});
-var _user$project$Main$Model = F2(
-	function (a, b) {
-		return {authInfo: a, message: b};
-	});
-var _user$project$Main$init = function (location) {
-	return {
-		ctor: '_Tuple2',
-		_0: A2(_user$project$Main$Model, _elm_lang$core$Maybe$Nothing, 'ready'),
-		_1: _elm_lang$core$Platform_Cmd$none
-	};
+var _user$project$Main$AuthInfo = function (a) {
+	return {webId: a};
+};
+var _user$project$Main$UsernameFetched = function (a) {
+	return {ctor: 'UsernameFetched', _0: a};
 };
 var _user$project$Main$UrlHasChanged = function (a) {
 	return {ctor: 'UrlHasChanged', _0: a};
@@ -13047,18 +12954,30 @@ var _user$project$Main$LogInReturn = function (a) {
 	return {ctor: 'LogInReturn', _0: a};
 };
 var _user$project$Main$subscriptions = function (model) {
-	return _user$project$Main$loginReturn(_user$project$Main$LogInReturn);
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: _user$project$Main$loginReturn(_user$project$Main$LogInReturn),
+			_1: {
+				ctor: '::',
+				_0: _user$project$Main$usernameReturn(_user$project$Main$UsernameFetched),
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$Main$LogOut = {ctor: 'LogOut'};
 var _user$project$Main$LogIn = {ctor: 'LogIn'};
 var _user$project$Main$view = function (model) {
 	var userInfo = function () {
-		var _p1 = model.authInfo;
-		if (_p1.ctor === 'Just') {
+		var _p3 = model.webId;
+		if (_p3 === '') {
 			return {
 				ctor: '::',
 				_0: _elm_lang$html$Html$text(
-					A2(_elm_lang$core$Basics_ops['++'], 'Logged in as ', _p1._0.webId)),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Logged in as ',
+						A2(_elm_lang$core$Maybe$withDefault, '', model.username))),
 				_1: {
 					ctor: '::',
 					_0: A2(
@@ -13108,7 +13027,7 @@ var _user$project$Main$main = A2(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Main.Msg":{"args":[],"tags":{"LogOut":[],"LogIn":[],"UrlHasChanged":["Navigation.Location"],"LogInReturn":["Main.AuthInfo"]}}},"aliases":{"Main.AuthInfo":{"args":[],"type":"{ webId : String, name : Maybe.Maybe String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Main.Msg":{"args":[],"tags":{"LogOut":[],"UsernameFetched":["String"],"LogIn":[],"UrlHasChanged":["Navigation.Location"],"LogInReturn":["Main.AuthInfo"]}}},"aliases":{"Main.AuthInfo":{"args":[],"type":"{ webId : String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

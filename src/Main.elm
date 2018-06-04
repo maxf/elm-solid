@@ -3,7 +3,7 @@ port module Main exposing (main)
 import Navigation exposing (Location)
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
-import JsonLd exposing (..)
+
 
 main : Program Never Model Msg
 main =
@@ -18,17 +18,26 @@ main =
 port login : String -> Cmd msg
 
 
+port fetchUsername : String -> Cmd msg
+
+
 port loginReturn : (AuthInfo -> msg) -> Sub msg
+
+
+port usernameReturn : (String -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    loginReturn LogInReturn
+    Sub.batch
+        [ loginReturn LogInReturn
+        , usernameReturn UsernameFetched
+        ]
 
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
-    ( Model Nothing Nothing, Cmd.none )
+    ( Model "" Nothing, Cmd.none )
 
 
 type alias Model =
@@ -36,8 +45,11 @@ type alias Model =
     , username : Maybe String
     }
 
+
+initialModel : Model
 initialModel =
     Model "" Nothing
+
 
 type alias AuthInfo =
     { webId : String }
@@ -48,7 +60,7 @@ type Msg
     | LogOut
     | LogInReturn AuthInfo
     | UrlHasChanged Location
-    | UsernameFetched (Result String String)
+    | UsernameFetched String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -62,21 +74,22 @@ update msg model =
 
         LogInReturn authInfo ->
             ( { model | webId = authInfo.webId }
-            , fetchUsername
+            , fetchUsername authInfo.webId
             )
 
-        UsernameFetched (Ok name) ->
-            ( { model | name = name }, Cmd.none )
-
-        UsernameFetched (Err name) ->
-            ( { model | name = "no name" }, Cmd.none )
+        UsernameFetched name ->
+            ( { model
+                | username =
+                    if name == "" then
+                        Nothing
+                    else
+                        Just name
+              }
+            , Cmd.none
+            )
 
         UrlHasChanged _ ->
             ( model, Cmd.none )
-
-
-
-fetchUsername -- fetch the user's card and retrieve the name from the results
 
 
 view : Model -> Html Msg
@@ -84,13 +97,12 @@ view model =
     let
         userInfo =
             case model.webId of
-                Just id ->
-                    [ text ("Logged in as " ++ model.username)
+                "" ->
+                    [ text ("Logged in as " ++ (model.username |> Maybe.withDefault ""))
                     , button [ onClick LogOut ] [ text "Log out " ]
                     ]
 
-                Nothing ->
+                _ ->
                     [ button [ onClick LogIn ] [ text "Log in" ] ]
-
     in
         div [] userInfo
