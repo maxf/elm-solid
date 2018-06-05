@@ -21,12 +21,12 @@
 
      app.ports.login.subscribe(function() {
        SolidAuthClient.popupLogin({ popupUri: 'http://localhost:3000/popup' })
-         .then(function (session) {
-           app.ports.loginReturn.send({ webId: session.webId });
-         })
-         .catch(function(err) {
-           app.ports.loginReturn.send({ webId: "" });
-         });
+                      .then(function (session) {
+                        app.ports.loginReturn.send({ webId: session.webId });
+                      })
+                      .catch(function(err) {
+                        app.ports.loginReturn.send({ webId: "" });
+                      });
      });
 
      app.ports.fetchUsername.subscribe(function(webId) {
@@ -42,6 +42,27 @@
          }
        });
      });
+
+     app.ports.localStorageSetItem.subscribe(function(keyValuePair) {
+       if (keyValuePair.length !== 2) {
+         console.log("bad value passed to localStorageSetItem port", key)
+       } else {
+         window.localStorage.setItem(keyValuePair[0], keyValuePair[1]);
+       }
+     });
+
+     app.ports.localStorageRemoveItem.subscribe(function(keyName) {
+       console.log("removing item");
+       window.localStorage.removeItem(keyName);
+     });
+
+     app.ports.localStorageGetItem.subscribe(function(keyName) {
+       var value = window.localStorage.getItem(keyName);
+       console.log("getting item");
+       app.ports.localStorageRetrievedItem.send([keyName, value]);
+     });
+
+
     </script>
   </body>
 </html>
