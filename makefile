@@ -14,6 +14,9 @@ public/javascripts/elm.js: src/*.elm
 	cd src && \
 	$(BASEDIR)/node_modules/.bin/elm-make *.elm --debug --yes --warn --output=../public/javascripts/elm.js
 
+watch: public/javascripts/elm.js
+	ls src/*.elm | entr -cdr make $*
+
 clean:
 	rm -rf $(ALL_THE_THINGS)
 
