@@ -1,12 +1,14 @@
 module Model exposing (Model, initialModel)
 
+import Auth exposing (AuthInfo)
+
 
 type alias Model =
-    { webId : String -- empty string means no user is logged in
+    { authInfo: Maybe AuthInfo
     , username : Maybe String
     }
 
 
 initialModel : Model
 initialModel =
-    Model "" Nothing
+    Model Nothing Nothing

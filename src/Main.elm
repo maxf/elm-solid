@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Navigation exposing (Location)
 import Model exposing (Model, initialModel)
+import Ports exposing (..)
 import Update exposing (Msg(..), update)
 import View exposing (view)
 
@@ -20,11 +21,13 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ loginReturn LogInReturn
-        , usernameReturn UsernameFetched
+        , logoutReturn LogOutReturn
+        , usernameFetchedOk UsernameFetchedOk
+        , usernameFetchedError UsernameFetchedError
         , localStorageRetrievedItem LocalStorageRetrievedItem
         ]
 
 
 init : Location -> ( Model, Cmd Msg )
 init location =
-    ( Model "" Nothing, localStorageGetItem "solid-auth-client" )
+    ( initialModel, localStorageGetItem "solid-auth-client" )

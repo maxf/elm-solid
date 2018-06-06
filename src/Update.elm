@@ -1,42 +1,64 @@
 module Update exposing (Msg(..), update)
 
 import Model exposing (Model, initialModel)
-import Ports exposing (login, fetchUsername)
-import Auth exposing (AuthInfo)
+import Ports exposing (login, logout, fetchUsername)
 import Navigation exposing (Location)
+import Auth exposing (AuthInfo, fromJson)
 
 
 type Msg
-    = LogIn
-    | LogOut
-    | LogInReturn AuthInfo
+    = UserClickedLogIn
+    | LogInReturn (Maybe String)
+    | UserClickedLogOut
+    | LogOutReturn (Maybe String)
     | UrlHasChanged Location
-    | UsernameFetched String
-    | LocalStorageRetrievedItem ( String, Maybe String )
+    | UsernameFetchedOk String
+    | UsernameFetchedError String
+    | LocalStorageRetrievedItem ( String, String )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LogIn ->
+        UserClickedLogIn ->
             ( model, login "" )
 
-        LogOut ->
+        LogInReturn (Just authJson) ->
+            let
+                authInfo =
+                    Auth.fromJson authJson |> Result.toMaybe
+
+                cmdMsg =
+                    case authInfo of
+                        Nothing ->
+                            Cmd.none
+
+                        Just info ->
+                            fetchUsername info.webId
+            in
+                ( { model | authInfo = authInfo }, cmdMsg )
+
+        LogInReturn Nothing ->
+            let
+                _ =
+                    Debug.log "Error" "Login failed"
+            in
+                ( model, Cmd.none )
+
+        UserClickedLogOut ->
+            ( model, logout "" )
+
+        LogOutReturn Nothing ->
             ( initialModel, Cmd.none )
 
-        LogInReturn authInfo ->
-            ( { model | webId = authInfo.webId }, fetchUsername authInfo.webId )
+        LogOutReturn _ ->
+            ( initialModel, Cmd.none )
 
-        UsernameFetched name ->
-            ( { model
-                | username =
-                    if name == "" then
-                        Nothing
-                    else
-                        Just name
-              }
-            , Cmd.none
-            )
+        UsernameFetchedOk name ->
+            ( { model | username = Just name }, Cmd.none )
+
+        UsernameFetchedError error ->
+            ( { model | username = Just error }, Cmd.none )
 
         UrlHasChanged _ ->
             ( model, Cmd.none )
@@ -44,8 +66,7 @@ update msg model =
         LocalStorageRetrievedItem ( key, value ) ->
             case key of
                 "solid-auth-client" ->
-                    -- value is a json string, which we'll now proceed to decode
-                    ( { model | username = getUserNameFromAuthInfo value }
+                    ( { model | authInfo = fromJson value |> Result.toMaybe }
                     , Cmd.none
                     )
 
