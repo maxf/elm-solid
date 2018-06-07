@@ -14,7 +14,7 @@ type Msg
     | UrlHasChanged Location
     | UsernameFetchedOk String
     | UsernameFetchedError String
-    | LocalStorageRetrievedItem ( String, String )
+    | LocalStorageRetrievedItem ( String, Maybe String )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -66,9 +66,12 @@ update msg model =
         LocalStorageRetrievedItem ( key, value ) ->
             case key of
                 "solid-auth-client" ->
-                    ( { model | authInfo = fromJson value |> Result.toMaybe }
-                    , Cmd.none
-                    )
+                    let
+                        authInfo =
+                            fromJson (value |> Maybe.withDefault "")
+                                |> Result.toMaybe
+                    in
+                        ( { model | authInfo = (Debug.log "af>" authInfo) }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )

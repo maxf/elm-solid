@@ -32,7 +32,7 @@ port loginReturn : (Maybe String -> msg) -> Sub msg
 port logoutReturn : (Maybe String -> msg) -> Sub msg
 
 
-port localStorageRetrievedItem : (( String, String ) -> msg) -> Sub msg
+port localStorageRetrievedItem : (( String, Maybe String ) -> msg) -> Sub msg
 
 
 port usernameFetchedOk : (String -> msg) -> Sub msg

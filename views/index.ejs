@@ -23,10 +23,12 @@
        SolidAuthClient
          .popupLogin({ popupUri: 'http://localhost:3000/popup' })
          .then(function (session) {
-           app.ports.loginOk.send(session);
+           console.log("login ok", session)
+           app.ports.loginReturn.send(session);
          })
          .catch(function(err) {
-           app.ports.loginError.send(err);
+           console.log("login failed", err);
+           app.ports.loginReturn.send(null);
          });
      });
 
