@@ -15,7 +15,7 @@ view model =
                     [ button [ onClick UserClickedLogIn ] [ text "Log in" ] ]
 
                 Just info ->
-                    [ text ("Logged in as " ++ info.webId )
+                    [ text ("Logged in as " ++ (model.username |> Maybe.withDefault info.webId) )
                     , button [ onClick UserClickedLogOut ] [ text "Log out " ]
                     ]
     in

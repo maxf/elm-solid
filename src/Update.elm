@@ -27,9 +27,8 @@ update msg model =
             let
                 authInfo =
                     Auth.fromJson authJson |> Result.toMaybe
-
                 cmdMsg =
-                    case authInfo of
+                    case (Debug.log ">>" authInfo) of
                         Nothing ->
                             Cmd.none
 
@@ -46,13 +45,13 @@ update msg model =
                 ( model, Cmd.none )
 
         UserClickedLogOut ->
-            ( model, logout "" )
+            ( initialModel, logout "" )
 
         LogOutReturn Nothing ->
-            ( initialModel, Cmd.none )
+            ( model, Cmd.none )
 
         LogOutReturn _ ->
-            ( initialModel, Cmd.none )
+            ( model, Cmd.none )
 
         UsernameFetchedOk name ->
             ( { model | username = Just name }, Cmd.none )
@@ -70,8 +69,15 @@ update msg model =
                         authInfo =
                             fromJson (value |> Maybe.withDefault "")
                                 |> Result.toMaybe
+                        cmdMsg =
+                            case authInfo of
+                                Nothing ->
+                                    Cmd.none
+
+                                Just info ->
+                                    fetchUsername info.webId
                     in
-                        ( { model | authInfo = (Debug.log "af>" authInfo) }, Cmd.none )
+                        ( { model | authInfo = authInfo }, cmdMsg )
 
                 _ ->
                     ( model, Cmd.none )
