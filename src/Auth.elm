@@ -13,7 +13,7 @@ type alias WebId = String
 authInfoDecoder : Decoder AuthInfo
 authInfoDecoder =
     decode AuthInfo
-        |> requiredAt [ "rpConfig", "provider", "url" ] string
+        |> requiredAt [ "session", "webId" ] string
 
 
 fromJson : String -> Result String AuthInfo

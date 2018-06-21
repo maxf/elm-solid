@@ -10,7 +10,7 @@
     <div id="main"></div>
     <script src="javascripts/elm.js"></script>
     <script src="javascripts/solid-auth-client.bundle.js"></script>
-    <script src="javascripts/rdflib.js"></script>
+    <script src="javascripts/rdflib.min.js"></script>
     <script>
      var node = document.getElementById('main');
      var app = Elm.Main.embed(node);
@@ -20,17 +20,16 @@
      var foaf = $rdf.Namespace("http://xmlns.com/foaf/0.1/")
 
      app.ports.login.subscribe(function() {
-       console.log("OKLOGIN")
        SolidAuthClient
-         .popupLogin({ popupUri: 'http://localhost:3000/popup' })
-         .then(function (session) {
-           console.log("login ok", session)
-           app.ports.loginReturn.send(localStorage.getItem('solid-auth-client'));
-         })
-         .catch(function(err) {
-           console.log("login failed", err);
-           app.ports.loginReturn.send(null);
-         });
+              .popupLogin({ popupUri: 'http://localhost:3000/popup' })
+              .then(function (session) {
+                console.log("login ok", session)
+                app.ports.loginReturn.send(localStorage.getItem('solid-auth-client'));
+              })
+              .catch(function(err) {
+                console.log("login failed", err);
+                app.ports.loginReturn.send(null);
+              });
      });
 
      app.ports.logout.subscribe(function() {
@@ -38,23 +37,24 @@
          .logout()
          .then(() =>
            console.log('successfully logged out'),
-           app.ports.logoutReturn.send("ok")
+               app.ports.logoutReturn.send("ok")
          )
          .catch(() =>
            console.log('failed logging out'),
-           app.ports.logoutReturn.send(null)
+                app.ports.logoutReturn.send(null)
          );
      });
 
      app.ports.fetchUsername.subscribe(function(webId) {
        // first read the RDF data from the webId
-       fetcher.nowOrWhenFetched(webId, function(ok, body, xhr) {
+       fetcher.nowOrWhenFetched(webId, { force: true }, function(ok, errorMessage, response) {
          if (!ok) {
-           console.log('filed')
+           console.log('nowOrWhenFetched failed:')
+           console.log('error',errorMessage)
+           console.log('response',response, response)
            app.ports.usernameFetchedError.send("Failed to fetch/process "+webId);
          } else {
            // extract the user and their name from the triple store
-           console.log('ok')
            const user = $rdf.sym(webId);
            const usernameNode = tripleStore.any(user, foaf('name'))
            if (!usernameNode || usernameNode.termType !== 'Literal') {
@@ -84,6 +84,7 @@
        console.log("getting item", keyName);
        app.ports.localStorageRetrievedItem.send([keyName, value]);
      });
+
     </script>
   </body>
 </html>

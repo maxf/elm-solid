@@ -23,12 +23,16 @@ update msg model =
         UserClickedLogIn ->
             ( model, login "" )
 
+        UserClickedLogOut ->
+            ( initialModel, logout "" )
+
         LogInReturn (Just authJson) ->
             let
                 authInfo =
                     Auth.fromJson authJson |> Result.toMaybe
+
                 cmdMsg =
-                    case (Debug.log ">>" authInfo) of
+                    case authInfo of
                         Nothing ->
                             Cmd.none
 
@@ -43,9 +47,6 @@ update msg model =
                     Debug.log "Error" "Login failed"
             in
                 ( model, Cmd.none )
-
-        UserClickedLogOut ->
-            ( initialModel, logout "" )
 
         LogOutReturn Nothing ->
             ( model, Cmd.none )
@@ -69,6 +70,7 @@ update msg model =
                         authInfo =
                             fromJson (value |> Maybe.withDefault "")
                                 |> Result.toMaybe
+
                         cmdMsg =
                             case authInfo of
                                 Nothing ->
