@@ -1,9 +1,11 @@
 module Update exposing (Msg(..), update)
 
-import Model exposing (Model, initialModel)
-import Ports exposing (login, logout, fetchUsername)
-import Navigation exposing (Location)
+import Model exposing (Model, Status(..), initialModel)
+import Ports exposing (login, logout, fetchUserInfo)
 import Auth exposing (AuthInfo, fromJson)
+import Navigation exposing (Location)
+import Http
+import Photos exposing (Album, fetchAlbum)
 
 
 type Msg
@@ -12,9 +14,11 @@ type Msg
     | UserClickedLogOut
     | LogOutReturn (Maybe String)
     | UrlHasChanged Location
-    | UsernameFetchedOk String
-    | UsernameFetchedError String
+    | UserInfoFetchedOk (String, String)
+    | UserInfoFetchedError String
+    | PhotosRetrieved (Result Http.Error Album)
     | LocalStorageRetrievedItem ( String, Maybe String )
+
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,7 +41,7 @@ update msg model =
                             Cmd.none
 
                         Just info ->
-                            fetchUsername info.webId
+                            fetchUserInfo info.webId
             in
                 ( { model | authInfo = authInfo }, cmdMsg )
 
@@ -54,11 +58,27 @@ update msg model =
         LogOutReturn _ ->
             ( model, Cmd.none )
 
-        UsernameFetchedOk name ->
-            ( { model | username = Just name }, Cmd.none )
+        UserInfoFetchedOk ( name, storageUrl ) ->
+            let
+                nextAction =
+                    case model.authInfo of
+                        Nothing -> -- not logged in
+                            Cmd.none
+                        Just authInfo ->
+                            Photos.fetchAlbum storageUrl PhotosRetrieved
+            in
+                ( { model | username = Just name, userDataUrl = Just storageUrl }
+                , nextAction
+                )
 
-        UsernameFetchedError error ->
-            ( { model | username = Just error }, Cmd.none )
+        UserInfoFetchedError error ->
+            ( { model | username = Just error, userDataUrl = Nothing }, Cmd.none )
+
+        PhotosRetrieved (Ok album) ->
+            ( { model | album = album }, Cmd.none )
+
+        PhotosRetrieved (Err err) ->
+            ( { model | status = HttpError err } , Cmd.none )
 
         UrlHasChanged _ ->
             ( model, Cmd.none )
@@ -77,7 +97,7 @@ update msg model =
                                     Cmd.none
 
                                 Just info ->
-                                    fetchUsername info.webId
+                                    fetchUserInfo info.webId
                     in
                         ( { model | authInfo = authInfo }, cmdMsg )
 

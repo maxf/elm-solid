@@ -10,7 +10,7 @@ port login : String -> Cmd msg
 port logout : String -> Cmd msg
 
 
-port fetchUsername : String -> Cmd msg
+port fetchUserInfo : String -> Cmd msg
 
 
 port localStorageSetItem : ( String, String ) -> Cmd msg
@@ -35,7 +35,7 @@ port logoutReturn : (Maybe String -> msg) -> Sub msg
 port localStorageRetrievedItem : (( String, Maybe String ) -> msg) -> Sub msg
 
 
-port usernameFetchedOk : (String -> msg) -> Sub msg
+port userInfoFetchedOk : (( String, String ) -> msg) -> Sub msg
 
 
-port usernameFetchedError : (String -> msg) -> Sub msg
+port userInfoFetchedError : (String -> msg) -> Sub msg

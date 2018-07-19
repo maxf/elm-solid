@@ -15,21 +15,22 @@
      var node = document.getElementById('main');
      var app = Elm.Main.embed(node);
 
-     var tripleStore = $rdf.graph()
-     var fetcher = new $rdf.Fetcher(tripleStore, 5000)
-     var foaf = $rdf.Namespace("http://xmlns.com/foaf/0.1/")
+     var tripleStore = $rdf.graph();
+     var fetcher = new $rdf.Fetcher(tripleStore, 5000);
+     var foaf = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
+     var pim = $rdf.Namespace('http://www.w3.org/ns/pim/space#');
 
      app.ports.login.subscribe(function() {
        SolidAuthClient
-              .popupLogin({ popupUri: 'http://localhost:3000/popup' })
-              .then(function (session) {
-                console.log("login ok", session)
-                app.ports.loginReturn.send(localStorage.getItem('solid-auth-client'));
-              })
-              .catch(function(err) {
-                console.log("login failed", err);
-                app.ports.loginReturn.send(null);
-              });
+         .popupLogin({ popupUri: 'http://localhost:3000/popup' })
+         .then(function (session) {
+           console.log("login ok", session)
+           app.ports.loginReturn.send(localStorage.getItem('solid-auth-client'));
+         })
+         .catch(function(err) {
+           console.log("login failed", err);
+           app.ports.loginReturn.send(null);
+         });
      });
 
      app.ports.logout.subscribe(function() {
@@ -45,7 +46,7 @@
          );
      });
 
-     app.ports.fetchUsername.subscribe(function(webId) {
+     app.ports.fetchUserInfo.subscribe(function(webId) {
        // first read the RDF data from the webId
        fetcher.nowOrWhenFetched(webId, { force: true }, function(ok, errorMessage, response) {
          if (!ok) {
@@ -54,13 +55,14 @@
            console.log('response',response, response)
            app.ports.usernameFetchedError.send("Failed to fetch/process "+webId);
          } else {
-           // extract the user and their name from the triple store
+           // extract the user some information from the triple store
            const user = $rdf.sym(webId);
-           const usernameNode = tripleStore.any(user, foaf('name'))
-           if (!usernameNode || usernameNode.termType !== 'Literal') {
-             app.ports.usernameFetchedError.send("Didn't find a name for "+webId);
+           const usernameNode = tripleStore.any(user, foaf('name'));
+           const userDataNode = tripleStore.any(user, pim('storage'));
+           if (!usernameNode || usernameNode.termType !== 'Literal' || !userDataNode || userDataNode.termType !== 'NamedNode') {
+             app.ports.userInfoFetchedError.send("Didn't find foaf:name or pim:storage for "+webId);
            } else {
-             app.ports.usernameFetchedOk.send(usernameNode.value);
+             app.ports.userInfoFetchedOk.send([usernameNode.value, userDataNode.value]);
            }
          }
        });

@@ -22,8 +22,8 @@ subscriptions model =
     Sub.batch
         [ loginReturn LogInReturn
         , logoutReturn LogOutReturn
-        , usernameFetchedOk UsernameFetchedOk
-        , usernameFetchedError UsernameFetchedError
+        , userInfoFetchedOk UserInfoFetchedOk
+        , userInfoFetchedError UserInfoFetchedError
         , localStorageRetrievedItem LocalStorageRetrievedItem
         ]
 
