@@ -1,8 +1,8 @@
 module Photos exposing (..)
 
 import Types exposing (..)
-import Json.Decode exposing (string, list, Decoder)
-import Json.Decode.Pipeline exposing (decode, requiredAt)
+import Json.Decode exposing (string, list, Decoder, succeed)
+import Json.Decode.Pipeline exposing (requiredAt)
 import Http
 
 type alias Album =
@@ -13,7 +13,7 @@ type alias Album =
 
 albumDecoder : Decoder Album
 albumDecoder =
-    decode Album
+    succeed Album
         |> requiredAt [ "title" ] string
         |> requiredAt [ "photos" ] (list string)
 

@@ -1,7 +1,7 @@
 module Auth exposing (..)
 
-import Json.Decode exposing (string, decodeString, Decoder)
-import Json.Decode.Pipeline exposing (decode, requiredAt)
+import Json.Decode exposing (string, decodeString, Decoder, succeed, Error)
+import Json.Decode.Pipeline exposing (requiredAt)
 
 type alias AuthInfo =
     { webId : WebId
@@ -12,11 +12,11 @@ type alias WebId = String
 
 authInfoDecoder : Decoder AuthInfo
 authInfoDecoder =
-    decode AuthInfo
+    succeed AuthInfo
         |> requiredAt [ "session", "webId" ] string
 
 
-fromJson : String -> Result String AuthInfo
+fromJson : String -> Result Error AuthInfo
 fromJson json =
     decodeString authInfoDecoder json
 

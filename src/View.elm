@@ -1,5 +1,6 @@
 module View exposing (view)
 
+import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -8,7 +9,7 @@ import Update exposing (Msg(..))
 import Http exposing (Error(..))
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
     let
         userInfo =
@@ -30,10 +31,14 @@ view model =
                 HttpError err ->
                     humanReadableHttpError err
     in
-        div []
+    { title = "elm-solid"
+    , body =
+        [ div []
             [ div [] userInfo
             , div [ class "message"] [text message ]
             ]
+        ]
+    }
 
 humanReadableHttpError : Http.Error -> String
 humanReadableHttpError error =
@@ -49,7 +54,7 @@ humanReadableHttpError error =
 
         BadStatus response ->
             "Bad response status: "
-                ++ (toString response.status.code)
+                ++ (String.fromInt response.status.code)
                 ++ ", "
                 ++ response.status.message
 

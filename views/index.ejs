@@ -12,8 +12,9 @@
     <script src="javascripts/solid-auth-client.bundle.js"></script>
     <script src="javascripts/rdflib.min.js"></script>
     <script>
-     var node = document.getElementById('main');
-     var app = Elm.Main.embed(node);
+     var app = Elm.Main.init({
+       node:  document.getElementById('main')
+     });
 
      var tripleStore = $rdf.graph();
      var fetcher = new $rdf.Fetcher(tripleStore, 5000);
@@ -68,18 +69,18 @@
        });
      });
 
-     app.ports.localStorageSetItem.subscribe(function(keyValuePair) {
-       if (keyValuePair.length !== 2) {
-         console.log("bad value passed to localStorageSetItem port", key)
-       } else {
-         window.localStorage.setItem(keyValuePair[0], keyValuePair[1]);
-       }
-     });
+//      app.ports.localStorageSetItem.subscribe(function(keyValuePair) {
+//        if (keyValuePair.length !== 2) {
+//          console.log("bad value passed to localStorageSetItem port", key)
+//        } else {
+//          window.localStorage.setItem(keyValuePair[0], keyValuePair[1]);
+//        }
+//      });
 
-     app.ports.localStorageRemoveItem.subscribe(function(keyName) {
-       console.log("removing item", keyName);
-       window.localStorage.removeItem(keyName);
-     });
+//     app.ports.localStorageRemoveItem.subscribe(function(keyName) {
+//       console.log("removing item", keyName);
+//       window.localStorage.removeItem(keyName);
+//     });
 
      app.ports.localStorageGetItem.subscribe(function(keyName) {
        var value = window.localStorage.getItem(keyName);

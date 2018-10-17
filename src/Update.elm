@@ -1,11 +1,13 @@
 module Update exposing (Msg(..), update)
 
+import Browser
+import Browser.Navigation as Nav
 import Model exposing (Model, Status(..), initialModel)
 import Ports exposing (login, logout, fetchUserInfo)
 import Auth exposing (AuthInfo, fromJson)
-import Navigation exposing (Location)
 import Http
 import Photos exposing (Album, fetchAlbum)
+import Url
 
 
 type Msg
@@ -13,12 +15,12 @@ type Msg
     | LogInReturn (Maybe String)
     | UserClickedLogOut
     | LogOutReturn (Maybe String)
-    | UrlHasChanged Location
     | UserInfoFetchedOk (String, String)
     | UserInfoFetchedError String
     | PhotosRetrieved (Result Http.Error Album)
     | LocalStorageRetrievedItem ( String, Maybe String )
-
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -28,7 +30,15 @@ update msg model =
             ( model, login "" )
 
         UserClickedLogOut ->
-            ( initialModel, logout "" )
+            ( { model
+                  | authInfo = Nothing
+                  , username = Nothing
+                  , userDataUrl = Nothing
+                  , album = Album "Empty" []
+                  , status = NoError
+              }
+            , logout ""
+            )
 
         LogInReturn (Just authJson) ->
             let
@@ -80,8 +90,18 @@ update msg model =
         PhotosRetrieved (Err err) ->
             ( { model | status = HttpError err } , Cmd.none )
 
-        UrlHasChanged _ ->
-            ( model, Cmd.none )
+        UrlChanged url ->
+            ( { model | url = url }
+            , Cmd.none
+            )
+
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
 
         LocalStorageRetrievedItem ( key, value ) ->
             case key of

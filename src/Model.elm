@@ -3,6 +3,8 @@ module Model exposing (Model, Status(..), initialModel)
 import Auth exposing (AuthInfo)
 import Photos exposing (Album)
 import Http
+import Url
+import Browser.Navigation as Nav
 
 type Status
     = NoError
@@ -15,9 +17,11 @@ type alias Model =
     , userDataUrl : Maybe String
     , album: Album
     , status: Status
+    , key : Nav.Key
+    , url : Url.Url
     }
 
 
-initialModel : Model
-initialModel =
-    Model Nothing Nothing Nothing (Album "Empty" []) NoError
+initialModel : Url.Url -> Nav.Key -> Model
+initialModel url key =
+    Model Nothing Nothing Nothing (Album "Empty" []) NoError key url

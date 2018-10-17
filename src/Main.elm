@@ -1,19 +1,23 @@
 port module Main exposing (main)
 
-import Navigation exposing (Location)
+import Browser
+import Browser.Navigation as Nav
 import Model exposing (Model, initialModel)
 import Ports exposing (..)
 import Update exposing (Msg(..), update)
 import View exposing (view)
+import Url
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Navigation.program UrlHasChanged
+    Browser.application
         { view = view
         , update = update
         , init = init
         , subscriptions = subscriptions
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
         }
 
 
@@ -28,6 +32,6 @@ subscriptions model =
         ]
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
-    ( initialModel, localStorageGetItem "solid-auth-client" )
+init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    ( initialModel url key, localStorageGetItem "solid-auth-client" )

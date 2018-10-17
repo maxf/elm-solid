@@ -11,9 +11,9 @@ function usage() {
 BASE=`pwd`
 
 function install() {
-    npm install
-    cd src
-    elm-package install -y
+#    npm install
+#    cd src
+#    elm package install -y
     $COMPILE_ELM
 }
 
@@ -21,11 +21,10 @@ function cleanup() {
   rm -rf node_modules src/elm-stuff public/javascripts/elm.js
 }
 
-COMPILE_ELM="$BASE/node_modules/.bin/elm-make
+COMPILE_ELM="$BASE/node_modules/.bin/elm make src/Main.elm"
 
 function watch_elm() {
-    cd src
-    ls *.elm | entr -cdr bash -c $COMPILE_ELM
+    ls src/*.elm | entr -cdr bash -c "$COMPILE_ELM"
 }
 
 if [ $# -eq 0 ]; then
