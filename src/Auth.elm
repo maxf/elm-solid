@@ -1,13 +1,16 @@
-module Auth exposing (..)
+module Auth exposing (AuthInfo, WebId, authInfoDecoder, fromJson)
 
-import Json.Decode exposing (string, decodeString, Decoder, succeed, Error)
+import Json.Decode exposing (Decoder, Error, decodeString, string, succeed)
 import Json.Decode.Pipeline exposing (requiredAt)
+
 
 type alias AuthInfo =
     { webId : WebId
     }
 
-type alias WebId = String
+
+type alias WebId =
+    String
 
 
 authInfoDecoder : Decoder AuthInfo
@@ -19,6 +22,7 @@ authInfoDecoder =
 fromJson : String -> Result Error AuthInfo
 fromJson json =
     decodeString authInfoDecoder json
+
 
 
 {--

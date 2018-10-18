@@ -1,9 +1,10 @@
-module Photos exposing (..)
+module Photos exposing (Album, albumDecoder, fetchAlbum)
 
-import Types exposing (..)
-import Json.Decode exposing (string, list, Decoder, succeed)
-import Json.Decode.Pipeline exposing (requiredAt)
 import Http
+import Json.Decode exposing (Decoder, list, string, succeed)
+import Json.Decode.Pipeline exposing (requiredAt)
+import Types exposing (..)
+
 
 type alias Album =
     { title : String
@@ -27,4 +28,4 @@ fetchAlbum albumUrl returnMsg =
                 (albumUrl ++ "public/apps/elm-solid/photos.json")
                 albumDecoder
     in
-        Http.send returnMsg request
+    Http.send returnMsg request

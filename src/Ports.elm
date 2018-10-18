@@ -1,4 +1,4 @@
-port module Ports exposing (..)
+port module Ports exposing (fetchUserInfo, localStorageGetItem, localStorageRemoveItem, localStorageRetrievedItem, localStorageSetItem, login, loginReturn, logout, logoutReturn, userInfoFetchedError, userInfoFetchedOk)
 
 -- import Auth exposing (AuthInfo)
 -- outgoing ports

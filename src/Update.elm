@@ -1,12 +1,12 @@
 module Update exposing (Msg(..), update)
 
+import Auth exposing (AuthInfo, fromJson)
 import Browser
 import Browser.Navigation as Nav
-import Model exposing (Model, Status(..), initialModel)
-import Ports exposing (login, logout, fetchUserInfo)
-import Auth exposing (AuthInfo, fromJson)
 import Http
+import Model exposing (Model, Status(..), initialModel)
 import Photos exposing (Album, fetchAlbum)
+import Ports exposing (fetchUserInfo, login, logout)
 import Url
 
 
@@ -15,7 +15,7 @@ type Msg
     | LogInReturn (Maybe String)
     | UserClickedLogOut
     | LogOutReturn (Maybe String)
-    | UserInfoFetchedOk (String, String)
+    | UserInfoFetchedOk ( String, String )
     | UserInfoFetchedError String
     | PhotosRetrieved (Result Http.Error Album)
     | LocalStorageRetrievedItem ( String, Maybe String )
@@ -31,11 +31,11 @@ update msg model =
 
         UserClickedLogOut ->
             ( { model
-                  | authInfo = Nothing
-                  , username = Nothing
-                  , userDataUrl = Nothing
-                  , album = Album "Empty" []
-                  , status = NoError
+                | authInfo = Nothing
+                , username = Nothing
+                , userDataUrl = Nothing
+                , album = Album "Empty" []
+                , status = NoError
               }
             , logout ""
             )
@@ -53,14 +53,14 @@ update msg model =
                         Just info ->
                             fetchUserInfo info.webId
             in
-                ( { model | authInfo = authInfo }, cmdMsg )
+            ( { model | authInfo = authInfo }, cmdMsg )
 
         LogInReturn Nothing ->
             let
                 _ =
                     Debug.log "Error" "Login failed"
             in
-                ( model, Cmd.none )
+            ( model, Cmd.none )
 
         LogOutReturn Nothing ->
             ( model, Cmd.none )
@@ -72,14 +72,16 @@ update msg model =
             let
                 nextAction =
                     case model.authInfo of
-                        Nothing -> -- not logged in
+                        Nothing ->
+                            -- not logged in
                             Cmd.none
+
                         Just authInfo ->
                             Photos.fetchAlbum storageUrl PhotosRetrieved
             in
-                ( { model | username = Just name, userDataUrl = Just storageUrl }
-                , nextAction
-                )
+            ( { model | username = Just name, userDataUrl = Just storageUrl }
+            , nextAction
+            )
 
         UserInfoFetchedError error ->
             ( { model | username = Just error, userDataUrl = Nothing }, Cmd.none )
@@ -88,7 +90,7 @@ update msg model =
             ( { model | album = album }, Cmd.none )
 
         PhotosRetrieved (Err err) ->
-            ( { model | status = HttpError err } , Cmd.none )
+            ( { model | status = HttpError err }, Cmd.none )
 
         UrlChanged url ->
             ( { model | url = url }
@@ -119,7 +121,7 @@ update msg model =
                                 Just info ->
                                     fetchUserInfo info.webId
                     in
-                        ( { model | authInfo = authInfo }, cmdMsg )
+                    ( { model | authInfo = authInfo }, cmdMsg )
 
                 _ ->
                     ( model, Cmd.none )

@@ -1,10 +1,11 @@
 module Model exposing (Model, Status(..), initialModel)
 
 import Auth exposing (AuthInfo)
-import Photos exposing (Album)
-import Http
-import Url
 import Browser.Navigation as Nav
+import Http
+import Photos exposing (Album)
+import Url
+
 
 type Status
     = NoError
@@ -12,11 +13,11 @@ type Status
 
 
 type alias Model =
-    { authInfo: Maybe AuthInfo
+    { authInfo : Maybe AuthInfo
     , username : Maybe String
     , userDataUrl : Maybe String
-    , album: Album
-    , status: Status
+    , album : Album
+    , status : Status
     , key : Nav.Key
     , url : Url.Url
     }

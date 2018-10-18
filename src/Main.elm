@@ -5,8 +5,8 @@ import Browser.Navigation as Nav
 import Model exposing (Model, initialModel)
 import Ports exposing (..)
 import Update exposing (Msg(..), update)
-import View exposing (view)
 import Url
+import View exposing (view)
 
 
 main : Program () Model Msg
