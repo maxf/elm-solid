@@ -1,0 +1,10 @@
+name: elm-solid
+root: ~/dev/elm-solid
+
+windows:
+  - editor:
+      layout: main-vertical
+      panes:
+        - ./setup.sh watch
+        - npm start
+        -

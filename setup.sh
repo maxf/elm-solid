@@ -21,7 +21,7 @@ function cleanup() {
   rm -rf node_modules src/elm-stuff public/javascripts/elm.js
 }
 
-COMPILE_ELM="$BASE/node_modules/.bin/elm make src/Main.elm"
+COMPILE_ELM="$BASE/node_modules/.bin/elm make --output public/javascripts/elm.js src/Main.elm"
 
 function watch_elm() {
     ls src/*.elm | entr -cdr bash -c "$COMPILE_ELM"
