@@ -1,6 +1,9 @@
 name: elm-solid
 root: ~/dev/elm-solid
 
+on_project_start:
+  npm install
+
 windows:
   - editor:
       layout: main-vertical
